@@ -1,0 +1,273 @@
+package MyGame;
+
+
+import java.util.Random;
+import java.util.Scanner;
+
+public class Partie {
+    private static String won = "Ordinateur";
+
+    public static Scanner sc = new Scanner(System.in);
+
+    public static boolean verifierLigneColonne(Plateau p,int ligne, int colonne) {
+        String symbole = p.getPlateau()[ligne][colonne].getInfo();
+        boolean trouveL = true, trouveC = true;
+        for(int i = 0; i < p.getSize(); i++) {
+            if(symbole.equals("empty") || !p.getPlateau()[i][colonne].getInfo().equals(symbole)) {
+                trouveC = false;
+                break;
+            }
+
+        }
+
+        for(int j = 0; j < p.getSize(); j++) {
+            if(symbole.equals("empty") || !p.getPlateau()[ligne][j].getInfo().equals(symbole)) {
+                trouveL = false;
+                break;
+            }
+        }
+
+
+        return trouveC || trouveL;
+    }
+
+    public static boolean verifierLigne(Plateau p,int ligne) {
+
+        String symbole = p.getPlateau()[ligne][0].getInfo();
+        for(int j = 1; j < p.getSize(); j++) {
+            if(symbole.equals("empty") || !p.getPlateau()[ligne][j].getInfo().equals(symbole))
+                return false;
+        }
+
+
+        return true;
+    }
+
+
+    public static boolean verifierColonne(Plateau p, int colonne) {
+        String symbole = p.getPlateau()[0][colonne].getInfo();
+        for(int i = 1; i < p.getSize(); i++) {
+            if(symbole.equals("empty") || !p.getPlateau()[i][colonne].getInfo().equals(symbole))
+                return false;
+        }
+
+        return true;
+    }
+
+    public static boolean verifierDiagonaleSup(Plateau p) {
+        String symbole = p.getPlateau()[1][1].getInfo();
+        for(int i = 0; i < p.getSize(); i++) {
+            if(symbole.equals("empty") || !p.getPlateau()[i][i].getInfo().equals(symbole))
+                return false;
+        }
+        return true;
+    }
+
+
+    public static boolean verifierDiagonaleInf(Plateau p) {
+        String symbole = p.getPlateau()[1][1].getInfo();
+        for(int j = 0; j < p.getSize(); j++) {
+            if(symbole.equals("empty") || !p.getPlateau()[j][2 - j].getInfo().equals(symbole))
+                return false;
+        }
+        return true;
+    }
+
+    public static boolean partieNulle(Plateau p) {
+        for(int i = 0; i < p.getSize(); i++) {
+            for(int j = 0; j < p.getSize(); j++) {
+                if(p.getPlateau()[i][j].getInfo().equals("empty")) {
+                    return false;
+                }
+            }   
+        }
+        if(detection(p) == null)
+            return true;
+
+        return false;
+    }
+
+
+
+    public static boolean plateauPlein(Plateau p) {
+        for(int i = 0; i < p.getSize(); i++) {
+            for(int j = 0; j < p.getSize(); j++) {
+                if(p.getPlateau()[i][j].getInfo().equals("empty")) {
+                    return false;
+                }
+            }   
+        }
+        return true;
+    }
+    
+    public static int[] detection(Plateau p) {
+        if(verifierLigneColonne(p, 0, 0))
+            return new int[]{0};
+
+        if(verifierLigneColonne(p, 1, 1))
+            return new int[]{1};
+
+        if(verifierLigneColonne(p, 2, 2))
+            return new int[]{2};
+
+        if(verifierDiagonaleSup(p))
+            return new int[]{0,0}; 
+        
+        if(verifierDiagonaleInf(p))
+            return new int[]{2,0};
+
+        return null;
+    }
+
+
+    public static String detectionAvance(Plateau p, int[] t,String symb,String nom_j) {
+        if(t != null) {
+            if(t.length == 1) {
+                if(verifierLigne(p,t[0])) {
+                    won = p.getPlateau()[t[0]][t[0]].getInfo().
+                    equals(symb) ? nom_j : "Ordinateur";
+                    return "ligne";
+                } 
+
+                if(verifierColonne(p, t[0])) {
+                    won = p.getPlateau()[t[0]][t[0]].getInfo().
+                    equals(symb) ? nom_j : "Ordinateur";
+                    return "colonne";
+                }
+            }else {
+                if(t[0] == 0) {
+                    won = p.getPlateau()[0][0].getInfo().
+                    equals(symb) ? nom_j : "Ordinateur";
+                    return "sup";
+                }
+                else {
+                    won = p.getPlateau()[2][0].getInfo().
+                    equals(symb) ? nom_j : "Ordinateur";
+                    return "inf";
+                }
+            }
+        }
+        return null;
+    }
+
+    public static void viderPlateau(Plateau p) {
+        for(int i = 0; i < p.getSize(); i++) {
+            for(int j = 0; j < p.getSize(); j++) {
+                p.getPlateau()[i][j].setInfo(" ");
+            }
+        }
+    }
+
+    public static boolean aligner(Plateau p,String symb,String nomJ) {
+        int[] res = detection(p);
+        String gangant = detectionAvance(p, res,symb,nomJ);
+        if(gangant != null) {
+            viderPlateau(p);
+            switch (gangant) {
+                case "ligne":
+                    for(int j = 0; j < p.getSize(); j++)
+                        p.getPlateau()[res[0]][j].setInfo("\"");
+                    break;
+                case "colonne":
+                    for(int i = 0; i < p.getSize(); i++)
+                        p.getPlateau()[i][res[0]].setInfo("\"");
+                    break;
+                case "sup":
+                    for(int i = 0; i < p.getSize(); i++)
+                        p.getPlateau()[i][i].setInfo("\"");
+                    break;
+
+                case "inf":
+                    for(int i = 0; i < p.getSize(); i++)
+                        p.getPlateau()[i][2 - i].setInfo("\"");
+                    break;
+                default:
+                    break;
+            }
+            return true;
+        }
+
+        return false;
+    }
+  
+
+    public static String choixSymbole() {
+
+        String s;
+        System.out.println("Choisir entre Sysmbole X ou O");
+        do {
+            System.out.print("Le Symbole : ");
+            s = sc.nextLine();
+        }while(!s.equals("X") && !s.equals("O"));
+
+        return s;
+    }
+
+    
+    public static int choixCase(int n) {
+      
+        int s;
+        System.out.println("Choisir un numéro d'une case entre 1 et " + n);
+        do {
+            System.out.print("Une Case : ");
+            s = sc.nextInt();
+        }while(s < 1 && s > n);
+
+        return s;
+    }
+
+
+
+
+    public static void jouer(Plateau p) {
+        int tour = 1;
+        boolean fin = false;
+        Random r = new Random();
+        Vue.affichePlateau(p);
+        Vue.afficherRegles(p.getSize());
+        System.out.println();
+        System.out.println();
+        System.out.print("Nom joueur : ");
+        String nomJoueur = sc.nextLine();
+        String symbole = choixSymbole();
+        int case_X;
+        while(!plateauPlein(p) && !fin) {
+            Vue.affichePlateau(p);
+            if(tour == 1) {
+                do{
+                    case_X = choixCase(p.getSize());
+                }while(p.caseOccupee(p, case_X));
+
+                p.mettreAjourCase(p, case_X,symbole);
+
+                tour = 0;
+            }else {
+                do{
+                    case_X = r.nextInt(p.getSize()*p.getSize()) + 1;
+                }while(p.caseOccupee(p, case_X)); 
+
+                if(symbole.equals("X"))
+                    p.mettreAjourCase(p, case_X,"O");
+                else 
+                    p.mettreAjourCase(p, case_X,"X");
+
+                tour = 1;
+            }
+
+            if(aligner(p,symbole,nomJoueur)) {
+                Vue.affichePlateau(p);
+                System.out.println("Félicitation");
+                System.out.println(won + " remporte la partie !");
+                fin = true;
+            }
+            
+        }
+
+        if(plateauPlein(p) && !fin) {
+            System.out.println("Match Nul !");
+        }
+
+        sc.close();
+
+    }
+}
